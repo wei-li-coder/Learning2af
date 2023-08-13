@@ -13,13 +13,15 @@ def takeClosest(myList, myNumber):
     before = myList[pos - 1]
     after = myList[pos]
     if after - myNumber < myNumber - before:
+       # since the focal distance is saved reversely against the list in supplementary material.
+       # choose one nearest
        return 48-pos
     else:
        return 48-(pos-1)
 
 def cal_groundtruth_index(patch, focal_distance):
     patch = patch/255
-    # in mm
+    # distance in mm
     max = 100000.0
     min = 100.0
 
