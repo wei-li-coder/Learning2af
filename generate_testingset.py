@@ -67,9 +67,8 @@ def read_directory(directory_name):
 
 ########## make directory
 def mkd_my():
-    path = "/data/wl/autofocus/learn2focus/dataset/test_demo_new_2/" #创建的文件的位置
-    for i in range(0, 49):#创建名为0-48的文件夹
-        # k = "%02d" % i
+    path = "/data/wl/autofocus/learn2focus/dataset/test_demo_new_2/" 
+    for i in range(0, 49):
         file_dir = path + str(i)
         if os.path.exists(file_dir):
             continue
@@ -78,6 +77,6 @@ def mkd_my():
 
 
 mkd_my()
-read_directory("/data/wl/autofocus/learn2focus/dataset/test/")#这里传入所要读取文件夹的绝对路径，加引号（引号不能省略！）
+read_directory("/data/wl/autofocus/learn2focus/dataset/test/")
 
 
