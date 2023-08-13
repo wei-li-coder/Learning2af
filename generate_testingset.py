@@ -61,13 +61,13 @@ def read_directory(directory_name):
                             idx = cal_groundtruth_index(patches_dep[i[cnt_idx],j[cnt_idx],:,:], focal_distance)
                             # save both dp into one image
                             newimg = np.concatenate((patches_left[i[cnt_idx],j[cnt_idx],:,:], patches_right[i[cnt_idx],j[cnt_idx],:,:]), axis = 1)
-                            cv2.imwrite('/data/wl/autofocus/learn2focus/dataset/test_demo_new_2' + '/' + str(idx) + '/' + str(cnt) + '_' + dir_3.rjust(2,'0') + '.png', newimg)
+                            cv2.imwrite('/data/wl/autofocus/learn2focus/dataset/test_set' + '/' + str(idx) + '/' + str(cnt) + '_' + dir_3.rjust(2,'0') + '.png', newimg)
                             cnt += 1
                             print(cnt)
 
 ########## make directory
 def mkd_my():
-    path = "/data/wl/autofocus/learn2focus/dataset/test_demo_new_2/" 
+    path = "/data/wl/autofocus/learn2focus/dataset/test_set/" 
     for i in range(0, 49):
         file_dir = path + str(i)
         if os.path.exists(file_dir):
