@@ -52,10 +52,13 @@ def read_directory(directory_name):
                     patches_right = patchify(rawimg_right, (128,128), step=40) # (10,7,128,128)
                     rawimg_left = cv2.imread(directory_name +  dir_1 + '/' + dir_left_1 + dir_2 + '/' + dir_3 + '/' + left_dir[dir_4], cv2.IMREAD_UNCHANGED)
                     patches_left = patchify(rawimg_left, (128,128), step=40)
+                    # use IMREAD_ANYDEPTH to read depth
                     rawimg_dep = cv2.imread(directory_name + dir_1 + '/' + dir_depth_1 + dir_2 + '/' + depth_dir[dir_4], cv2.IMREAD_ANYDEPTH)
+                    # upsample
                     rawimg_dep = cv2.resize(rawimg_dep,dsize=None,fx=4,fy=4,interpolation=cv2.INTER_LINEAR)
                     patches_dep = patchify(rawimg_dep, (128,128), step=40)
                     rawimg_conf = cv2.imread(directory_name + dir_1 + '/' + dir_conf_1 + dir_2 + '/' + conf_dir[dir_4], cv2.IMREAD_UNCHANGED)
+                    # upsample
                     rawimg_conf = cv2.resize(rawimg_conf[:,:,2],dsize=None,fx=4,fy=4,interpolation=cv2.INTER_LINEAR)
                     patches_conf = patchify(rawimg_conf, (128,128), step=40)
                     for cnt_idx in range(1):
