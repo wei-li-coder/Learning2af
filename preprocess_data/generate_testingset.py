@@ -14,7 +14,11 @@ focal_distance = [102.01, 104.23, 106.54, 108.47, 110.99, 113.63, 116.40, 118.73
                  225.41, 237.08, 247.35, 261.53, 274.13, 291.72, 307.54, 329.95, 350.41,\
                  379.91, 407.40, 447.99, 486.87, 546.23, 605.39, 700.37, 801.09, 935.91,\
                  1185.83, 1508.71, 2289.27, 3910.92]
-            
+# to fit the order in supplementary material
+focal_distance.reverse()
+# to convert in meters
+focal_distance = np.array([d / 1000.0 for d in focal_distance])
+
 def read_directory(directory_name):
     cnt = 0 
     right_dir = ['result_up_pd_right_bottom.png', 'result_up_pd_right_center.png', 'result_up_pd_right_left.png', 'result_up_pd_right_right.png', 'result_up_pd_right_top.png']
