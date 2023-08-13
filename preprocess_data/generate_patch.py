@@ -3,28 +3,17 @@ import cv2
 from patchify import patchify
 import bisect
 
-def takeClosest(myList, myNumber):
-    # choose nearest distance to decide index for the patch
-    if (myNumber >= myList[-1]):
-        return myList[-1]
-    elif myNumber <= myList[0]:
-        return myList[0]
-    pos = bisect.bisect_left(myList, myNumber)
-    before = myList[pos - 1]
-    after = myList[pos]
-    if after - myNumber < myNumber - before:
-       # since the focal distance is saved reversely against the list in supplementary material.
-       # choose one nearest
-       return 48-pos
-    else:
-       return 48-(pos-1)
+def get_idx_from_depth(focal_distance, pdepth):
+    pdiopters = 1.0 / pdepth
+    focal_diopters = np.array([1.0 / d for d in focal_distance])
+    return int(round(np.interp(pdiopters, focal_diopters, np.arange(focal_diopters.shape[0]))))
 
 def cal_groundtruth_index(patch, focal_distance):
     patch = patch/255
-    # distance in mm
-    max = 100000.0
-    min = 100.0
+    # distance in meter
+    max = 100
+    min = 0.1
 
     depth = (max * min) / (max - (max - min) * patch)
-    index = takeClosest(focal_distance, np.median(depth))
+    index = get_idx_from_depth(focal_distance, np.median(depth))
     return index
