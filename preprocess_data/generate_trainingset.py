@@ -6,15 +6,14 @@ from generate_patch import cal_groundtruth_index
 import numpy as np
 from random import randint
 
+# focal distance in mm
+# function bisect needs to sort from small to large
 focal_distance = [102.01, 104.23, 106.54, 108.47, 110.99, 113.63, 116.40, 118.73, 121.77,\
                  124.99, 127.69, 131.23, 134.99, 138.98, 142.35, 146.81, 150.59, 155.61,\
                  160.99, 165.57, 171.69, 178.29, 183.96, 191.60, 198.18, 207.10, 216.88,\
                  225.41, 237.08, 247.35, 261.53, 274.13, 291.72, 307.54, 329.95, 350.41,\
                  379.91, 407.40, 447.99, 486.87, 546.23, 605.39, 700.37, 801.09, 935.91,\
                  1185.83, 1508.71, 2289.27, 3910.92]
-
-# focal_distance.reverse()
-# focal_distance = np.array([d / 1000.0 for d in focal_distance])
 
 def read_directory(directory_name):
     cnt = 0 
@@ -45,9 +44,10 @@ def read_directory(directory_name):
                 j.append(randint(0, 6))
             for dir_3 in dirs_3:
                 for dir_4 in range(5):
-                    rawimg_right = cv2.imread(directory_name +  dir_1 + '/' + dir_right_1 + dir_2 + '/' + dir_3 + '/' + right_dir[dir_4], cv2.IMREAD_UNCHANGED)
-                    rawimg_right = cv2.resize(rawimg_right,dsize=None,fx=0.25,fy=0.25,interpolation=cv2.INTER_LINEAR)
-                    patches_right = patchify(rawimg_right, (128,128), step=40)
+                    rawimg_right = cv2.imread(directory_name +  dir_1 + '/' + dir_right_1 + dir_2 + '/' + dir_3 + '/' + right_dir[dir_4], cv2.IMREAD_UNCHANGED) # read as uint 16
+                    # resize to get the same size with depth map  
+                    rawimg_right = cv2.resize(rawimg_right,dsize=None,fx=0.25,fy=0.25,interpolation=cv2.INTER_LINEAR) 
+                    patches_right = patchify(rawimg_right, (128,128), step=40) # (10,7,128,128)
                     rawimg_left = cv2.imread(directory_name +  dir_1 + '/' + dir_left_1 + dir_2 + '/' + dir_3 + '/' + left_dir[dir_4], cv2.IMREAD_UNCHANGED)
                     rawimg_left = cv2.resize(rawimg_left,dsize=None,fx=0.25,fy=0.25,interpolation=cv2.INTER_LINEAR)
                     patches_left = patchify(rawimg_left, (128,128), step=40)
@@ -56,14 +56,14 @@ def read_directory(directory_name):
                     rawimg_conf = cv2.imread(directory_name + dir_1 + '/' + dir_conf_1 + dir_2 + '/' + conf_dir[dir_4], cv2.IMREAD_UNCHANGED)
                     patches_conf = patchify(rawimg_conf[:,:,2], (128,128), step=40)
                     for cnt_idx in range(1):
-                        if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) >= 1:
+                        # filter with median confidence for each patch, to remove patches
+                        if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) >= 0.5:
                             idx = cal_groundtruth_index(patches_dep[i[cnt_idx],j[cnt_idx],:,:], focal_distance)
                             newimg = np.concatenate((patches_left[i[cnt_idx],j[cnt_idx],:,:], patches_right[i[cnt_idx],j[cnt_idx],:,:]), axis = 1)
                             # save both dp into one image
                             cv2.imwrite('/data/wl/autofocus/learn2focus/dataset/train_set' + '/' + str(idx) + '/' + str(cnt) + '_' + dir_3.rjust(2,'0') + '.png', newimg)
                             cnt += 1
                             print(cnt)
-
 
 
 ########## make directory
