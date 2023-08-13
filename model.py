@@ -11,141 +11,9 @@ from types import FunctionType
 import torch
 from torch import nn, Tensor
 
-
-# def _make_divisible(ch, divisor=8, min_ch=None):
-#     """
-#     This function is taken from the original tf repo.
-#     It ensures that all layers have a channel number that is divisible by 8
-#     It can be seen here:
-#     https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-#     """
-#     if min_ch is None:
-#         min_ch = divisor
-#     new_ch = max(min_ch, int(ch + divisor / 2) // divisor * divisor)
-#     # Make sure that round down does not go down by more than 10%.
-#     if new_ch < 0.9 * ch:
-#         new_ch += divisor
-#     return new_ch
-
-
-# class ConvBNReLU(nn.Sequential):
-#     def __init__(self, in_channel, out_channel, kernel_size=3, stride=1, groups=1):#groups=1普通卷积
-#         padding = (kernel_size - 1) // 2
-#         super(ConvBNReLU, self).__init__(
-#             nn.Conv2d(in_channel, out_channel, kernel_size, stride, padding, groups=groups, bias=False),
-#             nn.BatchNorm2d(out_channel),
-#             nn.ReLU6(inplace=True)
-#         )
-
-# #到残差结构
-# class InvertedResidual(nn.Module):
-#     def __init__(self, in_channel, out_channel, stride, expand_ratio):#expand_ratio扩展因子
-#         super(InvertedResidual, self).__init__()
-#         hidden_channel = in_channel * expand_ratio
-#         self.use_shortcut = stride == 1 and in_channel == out_channel
-
-#         layers = []
-#         if expand_ratio != 1:
-#             # 1x1 pointwise conv
-#             layers.append(ConvBNReLU(in_channel, hidden_channel, kernel_size=1))
-#         layers.extend([
-#             # 3x3 depthwise conv
-#             ConvBNReLU(hidden_channel, hidden_channel, stride=stride, groups=hidden_channel),
-#             # 1x1 pointwise conv(linear)
-#             nn.Conv2d(hidden_channel, out_channel, kernel_size=1, bias=False),
-#             nn.BatchNorm2d(out_channel),
-#         ])
-
-#         self.conv = nn.Sequential(*layers)
-
-#     def forward(self, x):
-#         if self.use_shortcut:
-#             return x + self.conv(x)
-#         else:
-#             return self.conv(x)
-
-
-# class MobileNetV2(nn.Module):
-#     def __init__(self, num_classes=1000, alpha=4.0, round_nearest=8):#alpha超参数
-#         super(MobileNetV2, self).__init__()
-#         block = InvertedResidual
-#         input_channel = _make_divisible(32 * alpha, round_nearest)
-#         last_channel = _make_divisible(1280 * alpha, round_nearest)
-
-#         inverted_residual_setting = [
-#             # t, c, n, s
-#             [1, 16, 1, 1],
-#             [6, 24, 2, 2],
-#             [6, 32, 3, 2],
-#             [6, 64, 4, 2],
-#             [6, 96, 3, 1],
-#             [6, 160, 3, 2],
-#             [6, 320, 1, 1],
-#         ]
-
-#         features = []
-#         # conv1 layer
-#         # features.append(ConvBNReLU(3, input_channel, stride=2))
-#         features.append(ConvBNReLU(98, input_channel, stride=2))
-#         # building inverted residual residual blockes
-#         for t, c, n, s in inverted_residual_setting:
-#             output_channel = _make_divisible(c * alpha, round_nearest)
-#             for i in range(n):
-#                 stride = s if i == 0 else 1
-#                 features.append(block(input_channel, output_channel, stride, expand_ratio=t))
-#                 input_channel = output_channel
-#         # building last several layers
-#         features.append(ConvBNReLU(input_channel, last_channel, 1))
-#         # combine feature layers
-#         self.features = nn.Sequential(*features)
-
-#         # building classifier
-#         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-#         self.classifier = nn.Sequential(
-#             nn.Dropout(0.2),
-#             nn.Linear(last_channel, num_classes)
-#         )
-
-#         # weight initialization
-#         for m in self.modules():
-#             if isinstance(m, nn.Conv2d):
-#                 nn.init.kaiming_normal_(m.weight, mode='fan_out')
-#                 if m.bias is not None:
-#                     nn.init.zeros_(m.bias)
-#             elif isinstance(m, nn.BatchNorm2d):
-#                 nn.init.ones_(m.weight)
-#                 nn.init.zeros_(m.bias)
-#             elif isinstance(m, nn.Linear):
-#                 nn.init.normal_(m.weight, 0, 0.01)
-#                 nn.init.zeros_(m.bias)
-
-#     def forward(self, x):
-#         x = self.features(x)
-#         x = self.avgpool(x)
-#         x = torch.flatten(x, 1)
-#         x = self.classifier(x)
-#         return x
-
-#pytorch
+# pytorch https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv2.py
 
 def _log_api_usage_once(obj: Any) -> None:
-
-    """
-    Logs API usage(module and name) within an organization.
-    In a large ecosystem, it's often useful to track the PyTorch and
-    TorchVision APIs usage. This API provides the similar functionality to the
-    logging module in the Python stdlib. It can be used for debugging purpose
-    to log which methods are used and by default it is inactive, unless the user
-    manually subscribes a logger via the `SetAPIUsageLogger method <https://github.com/pytorch/pytorch/blob/eb3b9fe719b21fae13c7a7cf3253f970290a573e/c10/util/Logging.cpp#L114>`_.
-    Please note it is triggered only once for the same API call within a process.
-    It does not collect any data from open-source users since it is no-op by default.
-    For more information, please refer to
-    * PyTorch note: https://pytorch.org/docs/stable/notes/large_scale_deployments.html#api-usage-logging;
-    * Logging policy: https://github.com/pytorch/vision/issues/5052;
-
-    Args:
-        obj (class instance or method): an object to extract info from.
-    """
     module = obj.__module__
     if not module.startswith("torchvision"):
         module = f"torchvision.internal.{module}"
@@ -240,24 +108,6 @@ def _make_divisible(v: float, divisor: int, min_value: Optional[int] = None) -> 
     return new_v
 
 class Conv2dNormActivation(ConvNormActivation):
-    """
-    Configurable block used for Convolution2d-Normalization-Activation blocks.
-
-    Args:
-        in_channels (int): Number of channels in the input image
-        out_channels (int): Number of channels produced by the Convolution-Normalization-Activation block
-        kernel_size: (int, optional): Size of the convolving kernel. Default: 3
-        stride (int, optional): Stride of the convolution. Default: 1
-        padding (int, tuple or str, optional): Padding added to all four sides of the input. Default: None, in which case it will be calculated as ``padding = (kernel_size - 1) // 2 * dilation``
-        groups (int, optional): Number of blocked connections from input channels to output channels. Default: 1
-        norm_layer (Callable[..., torch.nn.Module], optional): Norm layer that will be stacked on top of the convolution layer. If ``None`` this layer won't be used. Default: ``torch.nn.BatchNorm2d``
-        activation_layer (Callable[..., torch.nn.Module], optional): Activation function which will be stacked on top of the normalization layer (if not None), otherwise on top of the conv layer. If ``None`` this layer won't be used. Default: ``torch.nn.ReLU``
-        dilation (int): Spacing between kernel elements. Default: 1
-        inplace (bool): Parameter for the activation layer, which can optionally do the operation in-place. Default ``True``
-        bias (bool, optional): Whether to use bias in the convolution layer. By default, biases are included if ``norm_layer is None``.
-
-    """
-
     def __init__(
         self,
         in_channels: int,
@@ -393,6 +243,7 @@ class MobileNetV2(nn.Module):
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
         self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
+        # 98channels
         features: List[nn.Module] = [
             Conv2dNormActivation(98, input_channel, stride=2, norm_layer=norm_layer, activation_layer=nn.ReLU6)
         ]
