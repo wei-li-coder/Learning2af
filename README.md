@@ -3,4 +3,4 @@ Folder 'preprocess_data' contains codes for preprocessing the public dataset and
 
 Folder 'train' contains codes for training with MobileNet_V2 in this dataset.
 
-progress.csv contains the whole training progress. It seems weird that the prediction accuracy in training set is unusually high, while the testing set is unbelievably low...
+progress.csv contains the whole training progress. It seems weird that the prediction accuracy in training set is unusually high, while the testing set is unbelievably low... However, the preprocess operation is the same for both the training set and the testing set.
