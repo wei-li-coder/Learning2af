@@ -96,6 +96,7 @@ for epoch in range(300):
             train_images, train_labels = train_data
             outputs = net(train_images.to(device))  # eval model only have last output layer
             predict_y = torch.max(outputs, dim=1)[1]
+            # calculate prediction accuracy in training set
             train_acc_0 += (predict_y == train_labels.to(device)).sum().item()
             train_acc_1 += (abs(predict_y - train_labels.to(device))<=1).sum().item()
             train_acc_2 += (abs(predict_y - train_labels.to(device))<=2).sum().item()
@@ -118,7 +119,7 @@ for epoch in range(300):
             gt = F.softmax(criterion, dim=1)
             test_loss = torch.nn.CrossEntropyLoss()(outputs, gt.to(device))
             test_loss += loss.detach().cpu().numpy().item()
-
+            # # calculate prediction accuracy in testing set
             predict_y = torch.max(outputs, dim=1)[1]
             acc_0 += (predict_y == test_labels.to(device)).sum().item()
             acc_1 += (abs(predict_y - test_labels.to(device))<=1).sum().item()
