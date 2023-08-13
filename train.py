@@ -13,18 +13,18 @@ import csv
 import random
 
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
 data_transform = {
     "train": transforms.Compose([transforms.ToTensor()
                                  ]),
-    "val": transforms.Compose([transforms.ToTensor()
+    "test": transforms.Compose([transforms.ToTensor()
                                ])}
 
+# rootpath for dataset
 root = '/data/wl/autofocus/learn2focus/dataset/'
-train_dataset=MyDataset(txt=root+'train_demo_new_1.txt', transform=data_transform["train"])
-# train_dataset=torchvision.datasets.CIFAR10('data',train=True,transform=data_transform["train"],download=True)
+train_dataset=MyDataset(txt=root+'train_set.txt', transform=data_transform["train"])
 
 train_num = len(train_dataset)
 print('num_of_trainData:', train_num)
@@ -34,12 +34,11 @@ train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size, shuffle=True,
                                            num_workers=8)
 
-validate_dataset=MyDataset(txt=root+'test_demo_new_1.txt', transform=data_transform["val"])
-# validate_dataset=torchvision.datasets.CIFAR10('data',train=False,transform=data_transform["val"],download=True)
-val_num = len(validate_dataset)
-print('num_of_testData:', val_num)
+test_dataset=MyDataset(txt=root+'test_demo_new_1.txt', transform=data_transform["test"])
+test_num = len(test_dataset)
+print('num_of_testData:', test_num)
 
-validate_loader = torch.utils.data.DataLoader(validate_dataset,
+test_loader = torch.utils.data.DataLoader(test_dataset,
                                               batch_size=batch_size, shuffle=False,
                                               num_workers=8)
 
@@ -82,7 +81,7 @@ for epoch in range(300):
         print("\rtrain loss: {:^3.0f}%[{}->{}]{:.4f}".format(int(rate*100), a, b, loss), end="")
     print('\nTotal step is:', step)
 
-    # validate
+    # test
     net.eval()
     train_acc_0 = 0.0  # accumulate accurate number / epoch
     train_acc_1 = 0.0
@@ -107,33 +106,33 @@ for epoch in range(300):
         train_accurate_4 = train_acc_4 / train_num
         print('[epoch %d] train_loss: %.3f  train_accuracy_0: %.3f   train_accuracy_1: %.3f  train_accuracy_2: %.3f  train_accuracy-4: %.3f' %
               (epoch + 1, running_loss / step, train_accurate_0, train_accurate_1, train_accurate_2, train_accurate_4))
-        val_loss = 0.0
-        for val_data in validate_loader:
-            val_images, val_labels = val_data
-            outputs = net(val_images.to(device))
+        test_loss = 0.0
+        for test_data in test_loader:
+            test_images, test_labels = test_data
+            outputs = net(test_images.to(device))
             num_classes = 49
-            expand_labels = torch.tile(torch.unsqueeze(val_labels, 1), [1, num_classes])
+            expand_labels = torch.tile(torch.unsqueeze(test_labels, 1), [1, num_classes])
             encoded_vector = torch.tile(torch.unsqueeze(torch.tensor(range(num_classes)), 0), [outputs.shape[0], 1])
             criterion = -(encoded_vector - expand_labels) * (encoded_vector - expand_labels)
             criterion = criterion.type(torch.float32) / 1
             gt = F.softmax(criterion, dim=1)
-            val_loss = torch.nn.CrossEntropyLoss()(outputs, gt.to(device))
-            val_loss += loss.detach().cpu().numpy().item()
+            test_loss = torch.nn.CrossEntropyLoss()(outputs, gt.to(device))
+            test_loss += loss.detach().cpu().numpy().item()
 
             predict_y = torch.max(outputs, dim=1)[1]
-            acc_0 += (predict_y == val_labels.to(device)).sum().item()
-            acc_1 += (abs(predict_y - val_labels.to(device))<=1).sum().item()
-            acc_2 += (abs(predict_y - val_labels.to(device))<=2).sum().item()
-            acc_4 += (abs(predict_y - val_labels.to(device))<=4).sum().item()
-        val_accurate_0 = acc_0 / val_num
-        val_accurate_1 = acc_1 / val_num
-        val_accurate_2 = acc_2 / val_num
-        val_accurate_4 = acc_4 / val_num
+            acc_0 += (predict_y == test_labels.to(device)).sum().item()
+            acc_1 += (abs(predict_y - test_labels.to(device))<=1).sum().item()
+            acc_2 += (abs(predict_y - test_labels.to(device))<=2).sum().item()
+            acc_4 += (abs(predict_y - test_labels.to(device))<=4).sum().item()
+        test_accurate_0 = acc_0 / test_num
+        test_accurate_1 = acc_1 / test_num
+        test_accurate_2 = acc_2 / test_num
+        test_accurate_4 = acc_4 / test_num
         print('[epoch %d] test_loss: %.3f  test_accuracy_0: %.3f   test_accuracy_1: %.3f  test_accuracy_2: %.3f  test_accuracy-4: %.3f' %
-              (epoch + 1, val_loss, val_accurate_0, val_accurate_1, val_accurate_2, val_accurate_4))
+              (epoch + 1, test_loss, test_accurate_0, test_accurate_1, test_accurate_2, test_accurate_4))
         f = open('csv/progress_{}.csv'.format(seed), 'a')
         csv_writer = csv.writer(f)
-        csv_writer.writerow([running_loss / step, train_accurate_0, train_accurate_1, train_accurate_2, train_accurate_4, val_loss, val_accurate_0, val_accurate_1, val_accurate_2, val_accurate_4])
+        csv_writer.writerow([running_loss / step, train_accurate_0, train_accurate_1, train_accurate_2, train_accurate_4, test_loss, test_accurate_0, test_accurate_1, test_accurate_2, test_accurate_4])
         f.close()
 
 print('Finished Training')
