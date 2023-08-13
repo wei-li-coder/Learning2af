@@ -2,7 +2,7 @@ import os
 os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import cv2
 from patchify import patchify
-from patch_my import cal_groundtruth_index
+from generate_patch import cal_groundtruth_index
 import numpy as np
 from random import randint
 
