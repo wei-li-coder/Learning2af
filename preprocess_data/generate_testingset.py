@@ -45,8 +45,8 @@ def read_directory(directory_name):
             j = [] # random sample index
             # one image sample _ times patches
             for _ in range(1):
-                i.append(randint(0, 9))
-                j.append(randint(0, 6))
+                i.append(randint(0, 47))
+                j.append(randint(0, 34))
             for dir_3 in dirs_3:
                 for dir_4 in range(5):
                     rawimg_right = cv2.imread(directory_name +  dir_1 + '/' + dir_right_1 + dir_2 + '/' + dir_3 + '/' + right_dir[dir_4], cv2.IMREAD_UNCHANGED)
