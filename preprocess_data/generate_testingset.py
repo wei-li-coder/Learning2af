@@ -7,15 +7,13 @@ import numpy as np
 from random import randint
 
 # focal distance in mm
+# function bisect needs to sort from small to large
 focal_distance = [102.01, 104.23, 106.54, 108.47, 110.99, 113.63, 116.40, 118.73, 121.77,\
                  124.99, 127.69, 131.23, 134.99, 138.98, 142.35, 146.81, 150.59, 155.61,\
                  160.99, 165.57, 171.69, 178.29, 183.96, 191.60, 198.18, 207.10, 216.88,\
                  225.41, 237.08, 247.35, 261.53, 274.13, 291.72, 307.54, 329.95, 350.41,\
                  379.91, 407.40, 447.99, 486.87, 546.23, 605.39, 700.37, 801.09, 935.91,\
                  1185.83, 1508.71, 2289.27, 3910.92]
-
-# focal_distance.reverse()
-# focal_distance = np.array([d / 1000.0 for d in focal_distance])
             
 def read_directory(directory_name):
     cnt = 0 
@@ -41,6 +39,7 @@ def read_directory(directory_name):
             # dirs_3 = ['0','1',...,'48']
             i = []
             j = [] # random sample index
+            # one image sample _ times patches
             for _ in range(1):
                 i.append(randint(0, 9))
                 j.append(randint(0, 6))
@@ -57,7 +56,7 @@ def read_directory(directory_name):
                     rawimg_conf = cv2.imread(directory_name + dir_1 + '/' + dir_conf_1 + dir_2 + '/' + conf_dir[dir_4], cv2.IMREAD_UNCHANGED)
                     patches_conf = patchify(rawimg_conf[:,:,2], (128,128), step=40)
                     for cnt_idx in range(1):
-                        if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) == 1:
+                        if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) >= 0.5:
                             idx = cal_groundtruth_index(patches_dep[i[cnt_idx],j[cnt_idx],:,:], focal_distance)
                             # save both dp into one image
                             newimg = np.concatenate((patches_left[i[cnt_idx],j[cnt_idx],:,:], patches_right[i[cnt_idx],j[cnt_idx],:,:]), axis = 1)
