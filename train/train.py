@@ -34,7 +34,7 @@ train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size, shuffle=True,
                                            num_workers=8)
 
-test_dataset=MyDataset(txt=root+'test_demo_new_1.txt', transform=data_transform["test"])
+test_dataset=MyDataset(txt=root+'test_set.txt', transform=data_transform["test"])
 test_num = len(test_dataset)
 print('num_of_testData:', test_num)
 
