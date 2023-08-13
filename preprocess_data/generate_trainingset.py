@@ -49,15 +49,15 @@ def read_directory(directory_name):
                 for dir_4 in range(5):
                     rawimg_right = cv2.imread(directory_name +  dir_1 + '/' + dir_right_1 + dir_2 + '/' + dir_3 + '/' + right_dir[dir_4], cv2.IMREAD_UNCHANGED) # read as uint 16
                     # resize to get the same size with depth map  
-                    rawimg_right = cv2.resize(rawimg_right,dsize=None,fx=0.25,fy=0.25,interpolation=cv2.INTER_LINEAR) 
                     patches_right = patchify(rawimg_right, (128,128), step=40) # (10,7,128,128)
                     rawimg_left = cv2.imread(directory_name +  dir_1 + '/' + dir_left_1 + dir_2 + '/' + dir_3 + '/' + left_dir[dir_4], cv2.IMREAD_UNCHANGED)
-                    rawimg_left = cv2.resize(rawimg_left,dsize=None,fx=0.25,fy=0.25,interpolation=cv2.INTER_LINEAR)
                     patches_left = patchify(rawimg_left, (128,128), step=40)
-                    rawimg_dep = cv2.imread(directory_name + dir_1 + '/' + dir_depth_1 + dir_2 + '/' + depth_dir[dir_4], cv2.IMREAD_UNCHANGED)
+                    rawimg_dep = cv2.imread(directory_name + dir_1 + '/' + dir_depth_1 + dir_2 + '/' + depth_dir[dir_4], cv2.IMREAD_ANYDEPTH)
+                    rawimg_dep = cv2.resize(rawimg_dep,dsize=None,fx=4,fy=4,interpolation=cv2.INTER_LINEAR)
                     patches_dep = patchify(rawimg_dep, (128,128), step=40)
                     rawimg_conf = cv2.imread(directory_name + dir_1 + '/' + dir_conf_1 + dir_2 + '/' + conf_dir[dir_4], cv2.IMREAD_UNCHANGED)
-                    patches_conf = patchify(rawimg_conf[:,:,2], (128,128), step=40)
+                    rawimg_conf = cv2.resize(rawimg_conf[:,:,2],dsize=None,fx=4,fy=4,interpolation=cv2.INTER_LINEAR)
+                    patches_conf = patchify(rawimg_conf, (128,128), step=40)
                     for cnt_idx in range(1):
                         # filter with median confidence for each patch, to remove patches
                         if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) >= 0.5:
