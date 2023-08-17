@@ -12,6 +12,15 @@ import torch.nn.functional as F
 import csv
 import random
 
+def loss_ordinal_diaz(logits, labels, diaz_coef):
+    num_classes = 49
+    expand_labels = torch.tile(torch.unsqueeze(labels, 1), [1, num_classes])
+    encoded_vector = torch.tile(torch.unsqueeze(torch.tensor(range(num_classes)), 0), [logits.shape[0], 1])
+    criterion = -(encoded_vector - expand_labels) * (encoded_vector - expand_labels)
+    criterion = criterion.type(torch.float32) / diaz_coef
+    gt = F.softmax(criterion, dim=1)
+    loss = torch.nn.CrossEntropyLoss()(logits, gt.to(device))
+    return loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -32,7 +41,7 @@ print('num_of_trainData:', train_num)
 batch_size = 128
 train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size, shuffle=True,
-                                           num_workers=8)
+                                           num_workers=4)
 
 test_dataset=MyDataset(txt=root+'test_set.txt', transform=data_transform["test"])
 test_num = len(test_dataset)
@@ -40,12 +49,13 @@ print('num_of_testData:', test_num)
 
 test_loader = torch.utils.data.DataLoader(test_dataset,
                                               batch_size=batch_size, shuffle=False,
-                                              num_workers=8)
+                                              num_workers=4)
 
 net = MobileNetV2(num_classes=49)
 net.to(device)
 
 optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.5, 0.999))
+lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0)
 
 seed = random.randint(1,10000)
 f = open('csv/progress_{}.csv'.format(seed), 'a')
@@ -62,13 +72,7 @@ for epoch in range(300):
         images, labels = data
         optimizer.zero_grad()
         logits = net(images.to(device))
-        num_classes = 49
-        expand_labels = torch.tile(torch.unsqueeze(labels, 1), [1, num_classes])
-        encoded_vector = torch.tile(torch.unsqueeze(torch.tensor(range(num_classes)), 0), [logits.shape[0], 1])
-        criterion = -(encoded_vector - expand_labels) * (encoded_vector - expand_labels)
-        criterion = criterion.type(torch.float32) / 1
-        gt = F.softmax(criterion, dim=1)
-        loss = torch.nn.CrossEntropyLoss()(logits, gt.to(device))
+        loss = loss_ordinal_diaz(logits, labels, 1)
         loss.backward()
         optimizer.step()
 
@@ -110,17 +114,11 @@ for epoch in range(300):
         test_loss = 0.0
         for test_data in test_loader:
             test_images, test_labels = test_data
-            outputs = net(test_images.to(device))
-            num_classes = 49
-            expand_labels = torch.tile(torch.unsqueeze(test_labels, 1), [1, num_classes])
-            encoded_vector = torch.tile(torch.unsqueeze(torch.tensor(range(num_classes)), 0), [outputs.shape[0], 1])
-            criterion = -(encoded_vector - expand_labels) * (encoded_vector - expand_labels)
-            criterion = criterion.type(torch.float32) / 1
-            gt = F.softmax(criterion, dim=1)
-            test_loss = torch.nn.CrossEntropyLoss()(outputs, gt.to(device))
-            test_loss += loss.detach().cpu().numpy().item()
+            test_outputs = net(test_images.to(device))
+            test_loss = loss_ordinal_diaz(test_outputs, test_labels, 1)
+            test_loss += test_loss.detach().cpu().numpy().item()
             # # calculate prediction accuracy in testing set
-            predict_y = torch.max(outputs, dim=1)[1]
+            predict_y = torch.max(test_outputs, dim=1)[1]
             acc_0 += (predict_y == test_labels.to(device)).sum().item()
             acc_1 += (abs(predict_y - test_labels.to(device))<=1).sum().item()
             acc_2 += (abs(predict_y - test_labels.to(device))<=2).sum().item()
