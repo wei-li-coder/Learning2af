@@ -44,7 +44,7 @@ def read_directory(directory_name):
             i = []
             j = [] # random sample index
             # one image sample _ times patches
-            for _ in range(1):
+            for _ in range(15):
                 i.append(randint(0, 47))
                 j.append(randint(0, 34))
             for dir_3 in dirs_3:
@@ -62,7 +62,7 @@ def read_directory(directory_name):
                     # upsample
                     rawimg_conf = cv2.resize(rawimg_conf[:,:,2],dsize=None,fx=4,fy=4,interpolation=cv2.INTER_LINEAR)
                     patches_conf = patchify(rawimg_conf, (128,128), step=40)
-                    for cnt_idx in range(1):
+                    for cnt_idx in range(15):
                         if np.median(patches_conf[i[cnt_idx],j[cnt_idx],:,:]) >= 0.5:
                             idx = cal_groundtruth_index(patches_dep[i[cnt_idx],j[cnt_idx],:,:], focal_distance)
                             # save both dp into one image
