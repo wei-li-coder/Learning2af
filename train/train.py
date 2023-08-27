@@ -32,8 +32,8 @@ data_transform = {
                                ])}
 
 # rootpath for dataset
-root = '/data/wl/autofocus/learn2focus/dataset/'
-train_dataset=MyDataset(txt=root+'train_set.txt', transform=data_transform["train"])
+root = '/data1/wll/autofocus/dataset/'
+train_dataset=MyDataset(txt=root+'train_set_0825.txt', transform=data_transform["train"])
 
 train_num = len(train_dataset)
 print('num_of_trainData:', train_num)
@@ -41,21 +41,21 @@ print('num_of_trainData:', train_num)
 batch_size = 128
 train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size, shuffle=True,
-                                           num_workers=4)
+                                           num_workers=8)
 
-test_dataset=MyDataset(txt=root+'test_set.txt', transform=data_transform["test"])
+test_dataset=MyDataset(txt=root+'test_set_0825.txt', transform=data_transform["test"])
 test_num = len(test_dataset)
 print('num_of_testData:', test_num)
 
 test_loader = torch.utils.data.DataLoader(test_dataset,
                                               batch_size=batch_size, shuffle=False,
-                                              num_workers=4)
+                                              num_workers=8)
 
 net = MobileNetV2(num_classes=49)
 net.to(device)
 
 optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.5, 0.999))
-lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0)
+lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0)
 
 seed = random.randint(1,10000)
 f = open('csv/progress_{}.csv'.format(seed), 'a')
