@@ -50,9 +50,9 @@ def read_directory(directory_name):
             for dir_3 in dirs_3:
                 for dir_4 in range(5):
                     rawimg_right = cv2.imread(directory_name +  dir_1 + '/' + dir_right_1 + dir_2 + '/' + dir_3 + '/' + right_dir[dir_4], cv2.IMREAD_UNCHANGED)
-                    patches_right = patchify(rawimg_right, (128,128), step=40)
+                    patches_right = patchify(rawimg_right, (128,128), step=40) # (48,35,128,128)
                     rawimg_left = cv2.imread(directory_name +  dir_1 + '/' + dir_left_1 + dir_2 + '/' + dir_3 + '/' + left_dir[dir_4], cv2.IMREAD_UNCHANGED)
-                    patches_left = patchify(rawimg_left, (128,128), step=40)
+                    patches_left = patchify(rawimg_left, (128,128), step=40) # (48,35,128,128)
                     # use IMREAD_ANYDEPTH to read depth
                     rawimg_dep = cv2.imread(directory_name + dir_1 + '/' + dir_depth_1 + dir_2 + '/' + depth_dir[dir_4], cv2.IMREAD_ANYDEPTH)
                     # upsample
